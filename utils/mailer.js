@@ -14,10 +14,10 @@ const mailTransport = nodemailer.createTransport(
 
 const mailerSender = (to, subject, body) =>{
     const mailOptions = {
-        "from": 'process.env.MAIL_USER',
         "to": to,
+        "from": process.env.MAIL_USER,
         "subject": subject,
-        "text": body
+        "html": body
     }
 
     mailTransport.sendMail(mailOptions, (err, info)=>{
@@ -29,4 +29,4 @@ const mailerSender = (to, subject, body) =>{
     });
 }
 
-module.exports = mailerSender();
+module.exports = mailerSender;

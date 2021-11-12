@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const mailerSender = require("../../../utils/mailer");
 let SecModelClass = require('./sec.model.js');
 let SecModel = new SecModelClass();
+const {v4: uuidv4, v4} = require('uuid');
 
 router.post('/login', async (req, res, next)=>{
   try {
@@ -54,12 +55,35 @@ router.post('/signin', async (req, res, next) => {
   }
 });
 
-router.get('/passrecovery', async (req, res, next)=>{
-  mailerSender(
-    "alguien@gmail.com",
-    "correo de prueba",
-    "Hola mucho gusto"
-  );
-  res.status(200).json({msg:"Email Sent!!"});
+router.post('/passrecovery', async (req, res, next)=>{
+ try  {
+   const {email} = req.body;
+   let uniqueId = v4();
+   let insertUId = await SecModel.insertUuid(email, uniqueId);
+
+   console.log(insertUId);
+   mailSender(
+     email,
+     "NoReply",
+     `<a> href="http://localhost:3000/api/sec/user/resetpsw/${uniqueId}">Haga clic para recuperar contraseña</a>`
+   )
+   res.status(200).json({"msg":"Email enviado"});
+ }catch (error){
+   res.status(500).json({"msg":"Error" +error});
+ }
 });
+
+router.put('/resetpsw/:id', async(req, res)=>{
+  try {
+    const {id}=req.params;
+    const {newPsw} = req.body;
+    const updatePsw = await SecModel.changePassword(id, newPsw);
+    console.log(updatePsw);
+    console.log("Constraseña actualizada.");
+    res.status(200).json({"msg":"Exito al actualizar la contraseña"});
+  } catch (error) {
+    res.status(500).json({"msg":"Error en cambio de contraseña"+ error});
+  }
+});
+
 module.exports = router;
